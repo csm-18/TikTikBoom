@@ -7,7 +7,7 @@ function createGame(element) {
     width: 960,
     height: 540,
     parent: element,
-    backgroundColor: '#0a1229',
+    backgroundColor: '#070b19',
     dom: {
       createContainer: true,
     },
@@ -18,7 +18,7 @@ function createGame(element) {
     physics: {
       default: 'arcade',
       arcade: {
-        gravity: { y: 700 },
+        gravity: { y: 1000 },
         debug: false,
       },
     },
@@ -34,485 +34,578 @@ class BootScene extends Phaser.Scene {
   }
 
   preload() {
-    // Ground sprite - platform tiles
-    this.load.image('ground', 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iMjIiIHZpZXdCb3g9IjAgMCA2NCAyMiIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNjQiIGhlaWdodD0iMjIiIGZpbGw9IiMxODM1NmYiLz48cmVjdCB4PSIwIiB5PSIwIiB3aWR0aD0iNjQiIGhlaWdodD0iMTEiIGZpbGw9IiMyNDNiNmEiLz48cmVjdCB4PSIwIiB5PSI2IiB3aWR0aD0iOCIgaGVpZ2h0PSIyIiBmaWxsPSIjMDgwODNkIi8+PHJlY3QgeD0iMTYiIHk9IjYiIHdpZHRoPSI4IiBoZWlnaHQ9IjIiIGZpbGw9IiMwODA4M2QiLz48cmVjdCB4PSIzMiIgeT0iNiIgd2lkdGg9IjgiIGhlaWdodD0iMiIgZmlsbD0iIzA4MDgzZCIvPjxyZWN0IHg9IjQ4IiB5PSI2IiB3aWR0aD0iOCIgaGVpZ2h0PSIyIiBmaWxsPSIjMDgwODNkIi8+PC9zdmc+');
-    // Player sprite - blue/cyan character with head and limbs
-    this.load.image('player', 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iNDgiIHZpZXdCb3g9IjAgMCAzMiA0OCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB4PSI4IiB5PSI0IiB3aWR0aD0iMTYiIGhlaWdodD0iOCIgcng9IjIiIGZpbGw9IiM0YjdmZmYiLz48cmVjdCB4PSI2IiB5PSIxMiIgd2lkdGg9IjIwIiBoZWlnaHQ9IjE2IiBmaWxsPSIjNDI2OWZmIi8+PHJlY3QgeD0iMiIgeT0iMjgiIHdpZHRoPSI4IiBoZWlnaHQ9IjEyIiBmaWxsPSIjNjk5MmVmIi8+PHJlY3QgeD0iMjIiIHk9IjI4IiB3aWR0aD0iOCIgaGVpZ2h0PSIxMiIgZmlsbD0iIzY5OTJlZiIvPjxyZWN0IHg9IjgiIHk9IjQwIiB3aWR0aD0iOCIgaGVpZ2h0PSI4IiBmaWxsPSIjNDI2OWZmIi8+PHJlY3QgeD0iMTYiIHk9IjQwIiB3aWR0aD0iOCIgaGVpZ2h0PSI4IiBmaWxsPSIjNDI2OWZmIi8+PGNpcmNsZSBjeD0iMTMiIGN5PSI4IiByPSIyIiBmaWxsPSIjZWZlZmVmIi8+PGNpcmNsZSBjeD0iMTkiIGN5PSI4IiByPSIyIiBmaWxsPSIjZWZlZmVmIi8+PC9zdmc+');
-    // Bomb sprite - dark red with yellow/gold fuse
-    this.load.image('bomb', 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDgiIGhlaWdodD0iNDgiIHZpZXdCb3g9IjAgMCA0OCA0OCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSIyNCIgY3k9IjI4IiByPSIxNiIgZmlsbD0iIzYwMjAyMCIvPjxyZWN0IHg9IjE4IiB5PSIyIiB3aWR0aD0iMTIiIGhlaWdodD0iNiIgZmlsbD0iI2ZmZTExYiIgcng9IjEiLz48cmVjdCB4PSIyMCIgeT0iOCIgd2lkdGg9IjgiIGhlaWdodD0iOCIgZmlsbD0iI2ZmZTExYiIgcng9IjEiLz48Y2lyY2xlIGN4PSIyNCIgY3k9IjI4IiByPSI0IiBmaWxsPSIjMzMzMzMzIi8+PC9zdmc+');
-    // Guide sprite - person with blue/purple color
-    this.load.image('guide', 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDgiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA0OCA2NCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSIyNCIgY3k9IjEwIiByPSI2IiBmaWxsPSIjNjk5MmVmIi8+PHJlY3QgeD0iMTQiIHk9IjE4IiB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIGZpbGw9IiM2OTkyZWYiLz48cmVjdCB4PSI4IiB5PSIzOCIgd2lkdGg9IjEwIiBoZWlnaHQ9IjI0IiBmaWxsPSIjNDI2OWZmIi8+PHJlY3QgeD0iMzAiIHk9IjM4IiB3aWR0aD0iMTAiIGhlaWdodD0iMjQiIGZpbGw9IiM0MjY5ZmYiLz48L3N2Zz4=');
+    if (!this.textures.exists('plat_tile')) {
+      const g = this.add.graphics();
+      g.fillStyle(0x1a2647, 1);
+      g.fillRect(0, 0, 32, 32);
+      g.lineStyle(2, 0x3b528c, 1);
+      g.strokeRect(1, 1, 30, 30);
+      g.generateTexture('plat_tile', 32, 32);
+      g.destroy();
+    }
+
+    if (!this.textures.exists('player_bot')) {
+      const g = this.add.graphics();
+      g.fillStyle(0x00d2ff, 1);
+      g.fillRect(4, 0, 24, 20); 
+      g.fillStyle(0x0066ff, 1);
+      g.fillRect(0, 20, 32, 28); 
+      g.fillStyle(0xffffff, 1);
+      g.fillRect(6, 6, 6, 4); 
+      g.fillRect(20, 6, 6, 4); 
+      g.generateTexture('player_bot', 32, 48);
+      g.destroy();
+    }
+
+    if (!this.textures.exists('glitch_enemy')) {
+      const g = this.add.graphics();
+      g.fillStyle(0xff3366, 1);
+      g.fillRect(2, 2, 28, 28);
+      g.fillStyle(0xffffff, 1);
+      g.fillRect(6, 8, 4, 4);
+      g.fillRect(20, 8, 4, 4);
+      g.generateTexture('glitch_enemy', 32, 32);
+      g.destroy();
+    }
+
+    if (!this.textures.exists('turing_bombe')) {
+      const g = this.add.graphics();
+      g.fillStyle(0x432b5b, 1);
+      g.fillRect(0, 0, 48, 54);
+      g.fillStyle(0xffd700, 1);
+      g.fillCircle(14, 16, 8);
+      g.fillCircle(34, 16, 8);
+      g.fillCircle(14, 38, 8);
+      g.fillCircle(34, 38, 8);
+      g.generateTexture('turing_bombe', 48, 54);
+      g.destroy();
+    }
   }
 
   create() {
-    const centerText = this.add.text(480, 160, 'TiTIkBoom', {
+    for(let i=0; i<960; i+=40) {
+      this.add.line(0, 0, i, 0, i, 540, 0x111c3a, 0.4).setOrigin(0);
+    }
+
+    this.add.text(480, 180, "TURING'S ENIGMA", {
       fontFamily: 'monospace',
-      fontSize: '44px',
-      color: '#d6e9ff',
-      align: 'center',
+      fontSize: '46px',
+      fontWeight: 'bold',
+      color: '#00d2ff',
     }).setOrigin(0.5);
 
-    this.add.text(480, 240, 'Press ENTER to start training', {
+    this.add.text(480, 230, 'The Solstice Protocol • DEV Game Jam Edition', {
       fontFamily: 'monospace',
       fontSize: '18px',
-      color: '#ffffff',
-      align: 'center',
+      color: '#8fa0cd',
     }).setOrigin(0.5);
 
-    this.enterKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER);
-    this.enterKey.on('down', () => {
-      this.scene.start('GameScene');
-    });
+    this.add.text(480, 340, '[ Press ENTER to Initialize Core Tape ]', {
+      fontFamily: 'monospace',
+      fontSize: '20px',
+      color: '#fff',
+    }).setOrigin(0.5);
+
+    const enter = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER);
+    enter.on('down', () => this.scene.start('GameScene'));
   }
 }
 
 class GameScene extends Phaser.Scene {
   constructor() {
     super('GameScene');
-    this.bulletType = '0';
-    this.nearBomb = false;
-    this.showingPuzzle = false;
+    this.currentLevelIndex = 0;
     this.currentStage = 'training';
-    this.facing = 'right';
+    this.tapeState = '0';
+    this.score = 0;
+    this.showingPuzzle = false;
+    this.gameOver = false;
+    this.transitioning = false;
   }
 
   create() {
-    // Define levels first so they're available throughout create()
     this.levels = [
       {
-        name: 'Arrays & Lists Basics',
+        name: 'Hut 8 Array Gates',
+        concept: 'Arrays & Index Memory Access',
         enemies: 2,
+        speed: 80,
+        layout: [
+          { x: 480, y: 510, sx: 30, sy: 2 },
+          { x: 200, y: 420, sx: 6, sy: 0.6 },
+          { x: 760, y: 420, sx: 6, sy: 0.6 },
+          { x: 480, y: 310, sx: 7, sy: 0.6 }
+        ],
+        bombePos: { x: 480, y: 250 },
         training: {
-          clue: 'Training: Understanding Arrays\nGiven array: [10, 20, 30, 40]\nWhat value is at index 2?',
-          hint: 'Arrays are 0-indexed. Index 0 has 10, index 1 has 20, so index 2 has...',
-          answer: ['30'],
+          clue: 'Given Data Array: [12, 24, 48, 96, 192]\nWhat value is stored at index 3?',
+          hint: 'Arrays use 0-based indexing. Index 0 holds 12, Index 1 holds 24...',
+          answer: ['96']
         },
         mission: {
-          clue: 'Mission: Array Traversal\nHow many elements are in [5, 15, 25, 35, 45]?',
-          hint: 'Count all elements in the array.',
-          answer: ['5'],
-        },
+          clue: 'If an array allocation spans indices 0 through 7,\nwhat is the total Length capacity of this array?',
+          hint: 'Count total slots from zero inclusive up to seven.',
+          answer: ['8']
+        }
       },
       {
-        name: 'Search Algorithms',
+        name: 'The Linear Decoder',
+        concept: 'Search Algorithm Efficiencies',
         enemies: 3,
+        speed: 100,
+        layout: [
+          { x: 480, y: 510, sx: 30, sy: 2 },
+          { x: 480, y: 410, sx: 12, sy: 0.6 },
+          { x: 180, y: 310, sx: 5, sy: 0.6 },
+          { x: 780, y: 310, sx: 5, sy: 0.6 }
+        ],
+        bombePos: { x: 180, y: 250 },
         training: {
-          clue: 'Training: Linear Search\nIn array [2, 7, 1, 9, 3], what is the index of 9?',
-          hint: 'Search from left to right: 0→2, 1→7, 2→1, 3→9. Found at index 3.',
-          answer: ['3'],
+          clue: 'Searching linearly through a scrambled list of 100 items,\nwhat is the worst-case number of comparison operations?',
+          hint: 'In worst-case scenario, the item is at the final position or missing.',
+          answer: ['100']
         },
         mission: {
-          clue: 'Mission: Search Challenge\nSorted array: [1, 3, 5, 7, 9, 11, 13]\nUsing binary search, how many checks to find 7?',
-          hint: 'First check middle (7). Found in 1 check with binary search!',
-          answer: ['1'],
-        },
+          clue: 'In a completely sorted array of 31 items, what is the maximum\nchecks required using Binary Search?',
+          hint: 'Binary search cuts work in half each time: log2(32) yields...',
+          answer: ['5']
+        }
       },
       {
-        name: 'Sorting & Complexity',
+        name: 'Bletchley Sort Core',
+        concept: 'Algorithm Sorting Complexity',
         enemies: 4,
+        speed: 110,
+        layout: [
+          { x: 480, y: 510, sx: 30, sy: 2 },
+          { x: 300, y: 420, sx: 5, sy: 0.6 },
+          { x: 600, y: 330, sx: 5, sy: 0.6 },
+          { x: 300, y: 240, sx: 5, sy: 0.6 }
+        ],
+        bombePos: { x: 300, y: 180 },
         training: {
-          clue: 'Training: Time Complexity\nBubble sort has O(n²) complexity.\nFor n=5 items, max comparisons?',
-          hint: 'O(n²) means roughly n×n. For 5 items: 5×5 = 25.',
-          answer: ['25', '20', '24'],
+          clue: 'Which sorting algorithm has a guaranteed performance profile of\nO(n log n) even in its absolute worst-case scenario?',
+          hint: 'Choose between: bubblesort, quicksort, mergesort.',
+          answer: ['mergesort', 'merge sort']
         },
         mission: {
-          clue: 'Mission: Optimal Sorting\nWhich algorithm is O(n log n) for average case?',
-          hint: 'Quick, merge, and heap sort are all O(n log n).',
-          answer: ['quicksort', 'mergesort', 'heapsort', 'quick sort', 'merge sort', 'heap sort'],
-        },
+          clue: 'What is the structural average-case time complexity\nof standard Bubble Sort loops?',
+          hint: 'Nested loops traversing inputs quadratically result in O(...) notation.',
+          answer: ['o(n^2)', 'on^2', 'n^2']
+        }
       },
+      {
+        name: 'The Linked Chain',
+        concept: 'Linear Linked Lists & Pointer Nodes',
+        enemies: 3,
+        speed: 120,
+        layout: [
+          { x: 480, y: 510, sx: 30, sy: 2 },
+          { x: 480, y: 420, sx: 24, sy: 0.6 },
+          { x: 480, y: 320, sx: 14, sy: 0.6 },
+          { x: 480, y: 220, sx: 6, sy: 0.6 }
+        ],
+        bombePos: { x: 480, y: 160 },
+        training: {
+          clue: 'Unlike array structures, elements in a single Linked List do not require\ncontiguous blocks of memory. What connects one node to the next?',
+          hint: 'A reference variable holding a memory location addresses.',
+          answer: ['pointer', 'pointers', 'reference', 'link']
+        },
+        mission: {
+          clue: 'What is the time complexity to insert a new head node item\nat the absolute front of a Singly Linked List?',
+          hint: 'Changing head references takes a constant fraction of work.',
+          answer: ['o(1)', 'o1', '1']
+        }
+      },
+      {
+        name: 'Stack Pointer Matrix',
+        concept: 'LIFO (Last-In First-Out) Architectures',
+        enemies: 4,
+        speed: 130,
+        layout: [
+          { x: 480, y: 510, sx: 30, sy: 2 },
+          { x: 150, y: 400, sx: 5, sy: 0.6 },
+          { x: 480, y: 400, sx: 5, sy: 0.6 },
+          { x: 810, y: 400, sx: 5, sy: 0.6 }
+        ],
+        bombePos: { x: 810, y: 340 },
+        training: {
+          clue: 'Stack buffers use a strict architectural tracking methodology.\nWhat is the short technical acronym used for Last-In, First-Out?',
+          hint: 'Four letters starting with L.',
+          answer: ['lifo']
+        },
+        mission: {
+          clue: 'What is the name of the operations execution function used to\nremove and return the top element from a processing Stack?',
+          hint: 'Commonly paired with its opposite partner function "push".',
+          answer: ['pop']
+        }
+      },
+      {
+        name: 'Queue Stream Protocol',
+        concept: 'FIFO (First-In First-Out) Pipelines',
+        enemies: 4,
+        speed: 140,
+        layout: [
+          { x: 480, y: 510, sx: 30, sy: 2 },
+          { x: 500, y: 420, sx: 16, sy: 0.6 },
+          { x: 200, y: 320, sx: 6, sy: 0.6 }
+        ],
+        bombePos: { x: 200, y: 260 },
+        training: {
+          clue: 'Queues maintain transactional stream order. What acronym defines\nthe First-In, First-Out structural standard?',
+          hint: 'Four letters starting with F.',
+          answer: ['fifo']
+        },
+        mission: {
+          clue: 'What is the formal structural term for inserting an item into\nthe back tail of a valid runtime Queue?',
+          hint: 'The opposite of removing items via "dequeue".',
+          answer: ['enqueue']
+        }
+      },
+      {
+        name: 'The Binary Tree',
+        concept: 'Non-Linear Hierarchical Networks',
+        enemies: 5,
+        speed: 150,
+        layout: [
+          { x: 480, y: 510, sx: 30, sy: 2 },
+          { x: 250, y: 420, sx: 6, sy: 0.6 },
+          { x: 710, y: 420, sx: 6, sy: 0.6 },
+          { x: 480, y: 320, sx: 6, sy: 0.6 }
+        ],
+        bombePos: { x: 480, y: 260 },
+        training: {
+          clue: 'What is the name given to the single top-most apex node origin point\nof a valid hierarchical Binary Tree structure?',
+          hint: 'Think of the bottom of a plant, inverted in computer science representations.',
+          answer: ['root']
+        },
+        mission: {
+          clue: 'If a balanced Binary Search Tree contains 3 operational levels,\nwhat is the maximum total count of leaf nodes on its bottom layer?',
+          hint: 'Each node splits exactly into 2 tracks. Level 0=1, Level 1=2, Level 2=...',
+          answer: ['4']
+        }
+      },
+      {
+        name: 'The Turing Machine',
+        concept: 'Universal Computability & The Halting Limit',
+        enemies: 6,
+        speed: 160,
+        layout: [
+          { x: 480, y: 510, sx: 30, sy: 2 },
+          { x: 480, y: 410, sx: 20, sy: 0.6 },
+          { x: 480, y: 300, sx: 10, sy: 0.6 }
+        ],
+        bombePos: { x: 480, y: 240 },
+        training: {
+          clue: 'Alan Turing proved that no universal algorithm can perfectly predict if a given program\nwill finish running or run forever. What is this famous problem called?',
+          hint: 'Named after the action of stopping execution completely.',
+          answer: ['halting problem', 'the halting problem', 'halting']
+        },
+        mission: {
+          clue: 'Excellent! To execute final decryption override, type the status term\nof the test used to see if a machine displays human-intelligent behavior.',
+          hint: 'Named directly after the birthday hero himself.',
+          answer: ['turing test', 'the turing test']
+        }
+      }
     ];
 
-    this.add.rectangle(480, 270, 960, 540, 0x08142f);
-    this.add.tileSprite(0, 529, 960, 22, 'ground').setScale(2).setOrigin(0, 1);
-    this.guideSprite = this.add.image(120, 100, 'guide').setScale(3);
+    this.bgBlock = this.add.rectangle(480, 270, 960, 540, 0x060a17);
+    this.platforms = this.physics.add.staticGroup();
 
-    this.nextLevelPortal = this.add.rectangle(900, 420, 40, 90, 0x4b6ef2, 0.8).setOrigin(0.5).setVisible(false);
-    this.nextLevelLabel = this.add.text(900, 320, 'NEXT', {
-      fontFamily: 'monospace',
-      fontSize: '18px',
-      color: '#ffffff',
-    }).setOrigin(0.5).setVisible(false);
-
-    this.player = this.physics.add.sprite(120, 360, 'player');
-    this.player.setDisplaySize(32, 48).setBounce(0.1).setCollideWorldBounds(true);
+    this.player = this.physics.add.sprite(150, 350, 'player_bot');
+    this.player.setCollideWorldBounds(true).setBounce(0.02);
 
     this.bullets = this.physics.add.group();
     this.enemies = this.physics.add.group();
 
-    const platforms = this.physics.add.staticGroup();
-    platforms.create(480, 530, 'ground').setScale(12, 1).refreshBody();
-    platforms.create(260, 430, 'ground').setScale(4, 0.5).refreshBody();
-    platforms.create(700, 330, 'ground').setScale(4, 0.5).refreshBody();
-    platforms.create(440, 240, 'ground').setScale(3, 0.5).refreshBody();
+    this.physics.add.collider(this.player, this.platforms);
+    this.physics.add.collider(this.enemies, this.platforms);
+    this.physics.add.collider(this.bullets, this.platforms, (b) => b.destroy());
+    
+    this.physics.add.overlap(this.bullets, this.enemies, this.handleBulletStrikes, null, this);
+    this.physics.add.overlap(this.player, this.enemies, this.handlePlayerDamage, null, this);
 
-    this.physics.add.collider(this.player, platforms);
-    this.physics.add.collider(this.enemies, platforms);
-    this.physics.add.collider(this.bullets, platforms, (bullet) => bullet.destroy());
-    this.physics.add.overlap(this.bullets, this.enemies, this.handleBulletEnemyCollision, null, this);
-    this.physics.add.overlap(this.player, this.enemies, this.handlePlayerEnemyCollision, null, this);
+    this.bombeMachine = this.physics.add.staticSprite(0, 0, 'turing_bombe');
+    this.buildLevelMap();
 
-    this.cursors = this.input.keyboard.addKeys({
+    this.keys = this.input.keyboard.addKeys({
       left: Phaser.Input.Keyboard.KeyCodes.A,
       right: Phaser.Input.Keyboard.KeyCodes.D,
       up: Phaser.Input.Keyboard.KeyCodes.W,
-      up2: Phaser.Input.Keyboard.KeyCodes.UP,
       shoot: Phaser.Input.Keyboard.KeyCodes.SPACE,
       toggle: Phaser.Input.Keyboard.KeyCodes.Z,
-      inspect: Phaser.Input.Keyboard.KeyCodes.E,
-      enter: Phaser.Input.Keyboard.KeyCodes.ENTER,
-    });
-
-    this.bomb = this.physics.add.staticSprite(820, 420, 'bomb');
-    this.bomb.setDisplaySize(48, 48);
-    this.bomb.enemyCount = 0;
-    this.bomb.enemiesDefeated = 0;
-
-    this.currentLevelIndex = 0;
-    this.score = 0;
-    this.gameOver = false;
-    this.readyForNextLevel = false;
-    this.facing = 'right';
-    this.bulletType = '0';
-
-    this.levelText = this.add.text(20, 20, `Level 1 • ${this.levels[0].name} (Training)`, {
-      fontFamily: 'monospace',
-      fontSize: '20px',
-      color: '#f7f7ff',
-    });
-
-    this.guideText = this.add.text(20, 52, 'Move to the bomb and press E. Learn DSA concepts by solving puzzles!', {
-      fontFamily: 'monospace',
-      fontSize: '14px',
-      color: '#bcd4ff',
-      wordWrap: { width: 420 },
-    });
-
-    this.bulletText = this.add.text(740, 20, 'Bullet: 0', {
-      fontFamily: 'monospace',
-      fontSize: '14px',
-      color: '#ffffff',
-    });
-
-    this.enemyCountText = this.add.text(740, 40, 'Enemies: 0', {
-      fontFamily: 'monospace',
-      fontSize: '14px',
-      color: '#ff9999',
-    });
-
-    this.scoreText = this.add.text(740, 60, 'Score: 0', {
-      fontFamily: 'monospace',
-      fontSize: '14px',
-      color: '#99ff99',
+      action: Phaser.Input.Keyboard.KeyCodes.E
     });
 
     this.input.keyboard.on('keydown-Z', () => {
-      this.bulletType = this.bulletType === '0' ? '1' : '0';
-      this.bulletText.setText(`Bullet: ${this.bulletType}`);
+      this.tapeState = this.tapeState === '0' ? '1' : '0';
+      this.hudTape.setText(`TAPE BUFFER STATE: [ ${this.tapeState} ]`);
+      this.hudTape.setTint(this.tapeState === '0' ? 0x00d2ff : 0xffa500);
     });
 
-    if (!this.textures.exists('bullet')) {
-      const bulletGraphics = this.add.graphics().fillStyle(0xffffff, 1).fillRect(0, 0, 10, 10);
-      bulletGraphics.generateTexture('bullet', 10, 10);
-      bulletGraphics.destroy();
-    }
-
     this.input.keyboard.on('keydown-SPACE', () => {
-      if (this.showingPuzzle || this.gameOver) return;
-      const direction = this.facing === 'left' ? -1 : 1;
-      const bullet = this.bullets.create(this.player.x + (direction * 22), this.player.y + 8, 'bullet').setDisplaySize(10, 10);
-      bullet.body.allowGravity = false;
-      bullet.setVelocityX(420 * direction);
-      bullet.setTint(this.bulletType === '0' ? 0x69d3ff : 0xffd56f);
-      bullet.type = this.bulletType;
-      bullet.setFlipX(direction === -1);
-      bullet.setCollideWorldBounds(false);
-      bullet.update = function () {
-        if (this.x < -20 || this.x > 980) {
-          this.destroy();
-        }
-      };
+      if (this.showingPuzzle || this.gameOver || this.transitioning) return;
+      const facingDir = this.player.flipX ? -1 : 1;
+      const b = this.bullets.create(this.player.x + (facingDir * 22), this.player.y - 4, 'plat_tile');
+      b.setScale(0.4, 0.15);
+      b.body.allowGravity = false;
+      b.body.setVelocityX(550 * facingDir);
+      b.setTint(this.tapeState === '0' ? 0x00d2ff : 0xffa500);
     });
 
     this.input.keyboard.on('keydown-E', () => {
-      if (!this.nearBomb || this.showingPuzzle || this.gameOver) return;
-      this.openPuzzle();
+      if (!this.nearTerminal || this.showingPuzzle || this.gameOver || this.transitioning) return;
+      this.launchDecryptionInterface();
     });
 
-    this.puzzleContainer = this.add.container(180, 120).setVisible(false);
-    const puzzleBg = this.add.rectangle(0, 0, 600, 300, 0x101c3d, 0.96).setOrigin(0);
-    const puzzleBorder = this.add.rectangle(0, 0, 600, 300).setStrokeStyle(3, 0x4b6ef2).setOrigin(0);
-    const puzzleTitle = this.add.text(300, 30, 'Code Defuse', {
-      fontFamily: 'monospace',
-      fontSize: '24px',
-      color: '#d7e6ff',
-    }).setOrigin(0.5);
-    this.puzzleText = this.add.text(40, 90, '', {
-      fontFamily: 'monospace',
-      fontSize: '18px',
-      color: '#e7f2ff',
-      wordWrap: { width: 520 },
-    });
-    this.answerText = this.add.text(40, 200, 'Answer:', {
-      fontFamily: 'monospace',
-      fontSize: '18px',
-      color: '#b7c7ff',
-    });
-    this.answerInput = this.add.dom(420, 200, 'input', {
-      width: '260px',
-      height: '32px',
-      background: '#0f1a36',
-      color: '#ffffff',
-      border: '2px solid #4b6ef2',
-      borderRadius: '8px',
-      padding: '8px 10px',
-      fontFamily: 'monospace',
-      fontSize: '16px',
-      outline: 'none',
-    });
-    const instructions = this.add.text(300, 260, 'Type an answer and click Submit or press ENTER', {
-      fontFamily: 'monospace',
-      fontSize: '16px',
-      color: '#a8b0ff',
-    }).setOrigin(0.5);
-
-    this.puzzleSubmitButton = this.add.dom(300, 296, 'button', {
-      width: '180px',
-      height: '34px',
-      background: '#4d6cff',
-      color: '#ffffff',
-      border: 'none',
-      borderRadius: '8px',
-      fontFamily: 'monospace',
-      fontSize: '14px',
-      cursor: 'pointer',
-      transition: 'background 0.2s',
-    }, 'SUBMIT');
-    this.puzzleSubmitButton.addListener('click');
-    this.puzzleSubmitButton.on('click', () => this.submitAnswer());
-    this.puzzleInput = this.answerInput.node;
-
-    // Add Enter key listener directly to the input element
-    this.puzzleInput.addEventListener('keydown', (event) => {
-      if (event.key === 'Enter') {
-        event.preventDefault();
-        this.submitAnswer();
-      }
-    });
-
-    this.puzzleContainer.add([puzzleBg, puzzleBorder, puzzleTitle, this.puzzleText, this.answerText, this.answerInput, instructions, this.puzzleSubmitButton]);
-
-    this.answerBuffer = '';
-    this.input.keyboard.on('keydown', (event) => {
-      if (!this.showingPuzzle) return;
-      if (event.key === 'Enter') {
-        this.submitAnswer();
-      }
-    });
+    this.renderHUD();
+    this.buildModalDOM();
   }
 
-  openPuzzle() {
-    if (this.currentStage === 'complete') {
-      this.guideText.setText('Level complete! Move to the portal and press E to continue.');
-      return;
-    }
+  buildLevelMap() {
+    this.platforms.clear(true, true);
+    const data = this.levels[this.currentLevelIndex];
+    const backgroundHexes = [0x060a17, 0x0a0617, 0x061417, 0x141206, 0x06170f, 0x170606, 0x111624, 0x02050d];
+    this.bgBlock.setFillStyle(backgroundHexes[this.currentLevelIndex]);
 
-    if (this.currentStage === 'mission' && this.bomb.enemiesDefeated < this.bomb.enemyCount) {
-      this.guideText.setText('Clear all enemies first, then inspect the mission bomb.');
+    data.layout.forEach(plat => {
+      this.platforms.create(plat.x, plat.y, 'plat_tile').setScale(plat.sx, plat.sy).refreshBody();
+    });
+
+    this.bombeMachine.setPosition(data.bombePos.x, data.bombePos.y).refreshBody();
+  }
+
+  renderHUD() {
+    this.add.rectangle(480, 45, 920, 70, 0x0c132a).setStrokeStyle(1, 0x1d2c56);
+    this.hudSector = this.add.text(40, 22, '', { fontFamily: 'monospace', fontSize: '20px', color: '#00d2ff', fontWeight: 'bold' });
+    this.hudConcept = this.add.text(40, 50, '', { fontFamily: 'monospace', fontSize: '13px', color: '#8fa0cd' });
+    this.hudTape = this.add.text(560, 24, 'TAPE BUFFER STATE: [ 0 ]', { fontFamily: 'monospace', fontSize: '14px', color: '#00d2ff' });
+    this.hudStatus = this.add.text(560, 50, 'STATUS: APPROACH THE BOMBE INTERFACE [E]', { fontFamily: 'monospace', fontSize: '13px', color: '#00ffcc' });
+    
+    // NEW HUD COMPONENT: Large warning alert for clear stage objective feedback
+    this.phaseAlert = this.add.text(480, 105, '', { 
+      fontFamily: 'monospace', 
+      fontSize: '15px', 
+      fontWeight: 'bold',
+      color: '#ffa500', 
+      backgroundColor: '#120b05',
+      padding: { x: 10, y: 4 }
+    }).setOrigin(0.5).setVisible(false).setDepth(10);
+
+    this.updateHUDSectors();
+  }
+
+  updateHUDSectors() {
+    const data = this.levels[this.currentLevelIndex];
+    const displayStage = this.currentStage.toUpperCase();
+    this.hudSector.setText(`SECTOR ${this.currentLevelIndex + 1}/8 : ${data.name} [${displayStage}]`);
+    this.hudConcept.setText(`THEORY MATRICES: ${data.concept}`);
+  }
+
+  buildModalDOM() {
+    this.modalView = this.add.container(230, 130).setVisible(false).setDepth(1000);
+    const bg = this.add.rectangle(0, 0, 500, 310, 0x0b1124, 0.98).setOrigin(0);
+    const frame = this.add.rectangle(0, 0, 500, 310).setStrokeStyle(2, 0x00d2ff).setOrigin(0);
+    
+    this.modalTitle = this.add.text(250, 25, 'Bletchley Decryption Subroutine', { fontFamily: 'monospace', fontSize: '20px', color: '#00d2ff' }).setOrigin(0.5);
+    this.modalPrompt = this.add.text(30, 75, '', { fontFamily: 'monospace', fontSize: '15px', color: '#fff', wordWrap: { width: 440 } });
+    this.modalHint = this.add.text(30, 175, '', { fontFamily: 'monospace', fontSize: '12px', color: '#8fa0cd', wordWrap: { width: 440 } });
+
+    this.domInput = this.add.dom(180, 240, 'input', {
+      width: '200px', height: '30px', background: '#121b34', color: '#fff', border: '1px solid #3b528c', padding: '0 6px', fontFamily: 'monospace'
+    });
+    
+    this.domBtn = this.add.dom(360, 240, 'button', {
+      width: '100px', height: '30px', background: '#0066ff', color: '#fff', border: 'none', cursor: 'pointer', fontFamily: 'monospace'
+    }, 'DECRYPT');
+
+    this.domBtn.addListener('click');
+    this.domBtn.on('click', () => this.evaluateDecryptionAttempt());
+
+    this.domInput.node.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        this.evaluateDecryptionAttempt();
+      }
+    });
+
+    this.modalView.add([bg, frame, this.modalTitle, this.modalPrompt, this.modalHint, this.domInput, this.domBtn]);
+  }
+
+  launchDecryptionInterface() {
+    if (this.currentStage === 'mission' && this.enemies.countActive() > 0) {
+      this.hudStatus.setText('ERROR: CLEAR SECTOR ALGORITHMIC ANOMALIES FIRST!');
+      this.hudStatus.setTint(0xff3366);
       return;
     }
 
     this.showingPuzzle = true;
-    this.puzzleInput.value = '';
-    const stageData = this.levels[this.currentLevelIndex][this.currentStage];
-    this.puzzleText.setText(stageData.clue);
-    this.puzzleContainer.setVisible(true);
-    this.guideText.setText('Solve the puzzle: ' + (stageData.hint ? stageData.hint.substring(0, 50) : 'Use your code sense.'));
+    this.domInput.node.value = '';
+    const levelData = this.levels[this.currentLevelIndex][this.currentStage];
+    
+    this.modalPrompt.setText(levelData.clue);
+    this.modalHint.setText(`LOGIC HINT: ${levelData.hint}`);
+    this.modalView.setVisible(true);
+    
+    setTimeout(() => this.domInput.node.value = '', 10);
+    setTimeout(() => this.domInput.node.focus(), 50);
   }
 
-  spawnEnemies() {
-    this.enemies.clear(true, true);
-    this.bomb.enemyCount = this.levels[this.currentLevelIndex].enemies;
-    this.bomb.enemiesDefeated = 0;
-    for (let i = 0; i < this.bomb.enemyCount; i++) {
-      const enemy = this.enemies.create(760 - i * 80, 380, 'player');
-      enemy.setTint(0xd95454);
-      enemy.setDisplaySize(32, 44);
-      enemy.setBounce(0.2);
-      enemy.setCollideWorldBounds(true);
-      enemy.setVelocityX(Phaser.Math.Between(-120, -80));
-      enemy.health = 1;
-    }
-  }
+  evaluateDecryptionAttempt() {
+    const levelData = this.levels[this.currentLevelIndex][this.currentStage];
+    const processedInput = this.domInput.node.value.trim().toLowerCase();
+    const matches = levelData.answer.map(v => v.toLowerCase().trim());
 
-  handleBulletEnemyCollision(bullet, enemy) {
-    if (this.gameOver) return;
-    enemy.destroy();
-    bullet.destroy();
-    this.score += 1;
-    this.scoreText.setText(`Score: ${this.score}`);
-    this.bomb.enemiesDefeated += 1;
-    if (this.bomb.enemiesDefeated >= this.bomb.enemyCount) {
-      this.guideText.setText('All enemies defeated! Now inspect the bomb to defuse it.');
-      this.enemyCountText.setText('Enemies: 0');
+    if (matches.includes(processedInput)) {
+      this.resolveStageSuccess();
     } else {
-      this.guideText.setText(`Enemies down: ${this.bomb.enemiesDefeated}/${this.bomb.enemyCount}`);
-      this.enemyCountText.setText(`Enemies: ${this.bomb.enemiesDefeated}/${this.bomb.enemyCount}`);
+      this.hudStatus.setText('DECRYPTION FAILURE: PARITY CHECK ERROR. RETRY.');
+      this.hudStatus.setTint(0xff3366);
+      this.domInput.node.value = '';
     }
   }
 
-  handlePlayerEnemyCollision(player, enemy) {
-    if (this.gameOver) return;
-    this.gameOver = true;
-    enemy.destroy();
-    this.physics.pause();
-    player.setTint(0xff0000);
-    this.guideText.setText('Game Over! An enemy touched you. Press ENTER or click RESTART.');
-    const gameOverText = this.add.text(480, 270, 'GAME OVER', {
-      fontFamily: 'monospace',
-      fontSize: '36px',
-      color: '#ff6666',
-    }).setOrigin(0.5);
-    this.restartButton = this.add.dom(480, 330, 'button', {
-      width: '180px',
-      height: '36px',
-      background: '#ff5c5c',
-      color: '#ffffff',
-      border: 'none',
-      borderRadius: '8px',
-      fontFamily: 'monospace',
-      fontSize: '16px',
-      cursor: 'pointer',
-    }, 'RESTART');
-    this.restartButton.addListener('click');
-    this.restartButton.on('click', () => {
-      this.scene.restart();
-    });
-    this.input.keyboard.once('keydown-ENTER', () => {
-      this.scene.restart();
-    });
-  }
-
-  closePuzzle(success = false) {
+  resolveStageSuccess() {
     this.showingPuzzle = false;
-    this.puzzleContainer.setVisible(false);
-    if (success) {
-      if (this.currentStage === 'training') {
-        this.currentStage = 'mission';
-        const levelNumber = this.currentLevelIndex + 1;
-        this.levelText.setText(`Level ${levelNumber} • ${this.levels[this.currentLevelIndex].name} (Mission)`);
-        this.guideText.setText('Training complete! Enemies incoming. Defuse the mission bomb!');
-        this.spawnEnemies();
+    this.modalView.setVisible(false);
+    this.hudStatus.setTint(0x00ffcc);
+
+    if (this.currentStage === 'training') {
+      this.currentStage = 'mission';
+      this.hudStatus.setText('DECRYPTION LOCKED. WARNING: RELEASING RUNTIME GLITCHES.');
+      this.updateHUDSectors();
+      this.triggerGlitchInvasion();
+
+      // UX FIX: Fire pulsing instructions alert to clear out transition ambiguity loop
+      this.phaseAlert.setText('⚠️ TRAINING DATA CRACKED! ELIMINATE ENEMIES & RETURN TO THE BOMBE MACHINE TERMINAL!');
+      this.phaseAlert.setVisible(true);
+      
+      // Auto fade alert safely after 4 seconds run time
+      if (this.alertFadeTimer) this.alertFadeTimer.remove();
+      this.alertFadeTimer = this.time.delayedCall(4000, () => {
+        this.phaseAlert.setVisible(false);
+      });
+
+    } else {
+      if (this.currentLevelIndex >= this.levels.length - 1) {
+        this.triggerUniversalVictory();
       } else {
-        if (this.currentLevelIndex >= this.levels.length - 1) {
-          this.guideText.setText('You finished all missions. You are ready to code in the field!');
-          this.levelText.setText('All Levels Complete');
-          this.currentStage = 'complete';
-          this.bomb.destroy();
-          this.enemies.clear(true, true);
-          this.nextLevelPortal.setVisible(false);
-          this.nextLevelLabel.setVisible(false);
-        } else {
-          const levelNumber = this.currentLevelIndex + 1;
-          this.currentStage = 'complete';
-          this.levelText.setText(`Level ${levelNumber} • ${this.levels[this.currentLevelIndex].name} Complete`);
-          this.guideText.setText('Level complete! Move to the portal and press E to continue.');
-          this.readyForNextLevel = true;
-          this.nextLevelPortal.setVisible(true);
-          this.nextLevelLabel.setVisible(true);
-          this.bomb.setVisible(false);
-          this.bomb.setActive(false);
-          this.enemies.clear(true, true);
-        }
+        this.transitioning = true;
+        this.enemies.clear(true, true);
+        this.phaseAlert.setVisible(false);
+        
+        this.currentLevelIndex++;
+        this.currentStage = 'training';
+        this.hudStatus.setText('SECTOR CLEARED. ACCESSING NEXT COMPUTATIONAL FIELD.');
+        
+        this.buildLevelMap();
+        this.updateHUDSectors();
+        
+        this.player.setPosition(150, 350);
+        this.player.body.setVelocity(0,0);
+        
+        this.time.delayedCall(100, () => {
+          this.transitioning = false;
+        });
       }
-    } else {
-      this.guideText.setText('Incorrect answer. Study the hint and try again!');
     }
   }
 
-  advanceToNextLevel() {
-    this.readyForNextLevel = false;
-    const levelNumber = this.currentLevelIndex + 2;
-    this.currentLevelIndex += 1;
-    this.currentStage = 'training';
-    this.levelText.setText(`Level ${levelNumber} • ${this.levels[this.currentLevelIndex].name} (Training)`);
-    this.guideText.setText('New level unlocked. Inspect the training bomb to continue.');
-    this.nextLevelPortal.setVisible(false);
-    this.nextLevelLabel.setVisible(false);
-    this.bomb.setPosition(820, 420);
-    this.bomb.setActive(true).setVisible(true);
-    this.bomb.enemyCount = 0;
-    this.bomb.enemiesDefeated = 0;
+  triggerGlitchInvasion() {
+    const levelData = this.levels[this.currentLevelIndex];
+    for (let i = 0; i < levelData.enemies; i++) {
+      const spawnX = Phaser.Math.Between(400, 900);
+      const spawnY = Phaser.Math.Between(150, 300);
+      const enemy = this.enemies.create(spawnX, spawnY, 'glitch_enemy');
+      enemy.setCollideWorldBounds(true).setBounce(1, 0.05);
+      enemy.immuneState = (i % 2 === 0) ? '0' : '1';
+      enemy.setTint(enemy.immuneState === '0' ? 0xff4d4d : 0xff9900);
+      enemy.body.setVelocityX(Phaser.Math.Between(-levelData.speed, -levelData.speed * 0.6));
+    }
+  }
+
+  handleBulletStrikes(bullet, enemy) {
+    bullet.destroy();
+    enemy.destroy();
+    this.score += 25;
+    if (this.enemies.countActive() === 0) {
+      this.hudStatus.setText('THREATS PURGED. LOG BACK INTO TERMINAL FOR PROTOCOL ADVANCEMENT.');
+      
+      // Dynamic notification updates when battle loops switch objectives
+      this.phaseAlert.setText('⚡ SECTOR CLEAR: APPROACH TERMINAL NODE AND PRESS [E] TO OVERRIDE LEVEL!');
+      this.phaseAlert.setVisible(true);
+    }
+  }
+
+  handlePlayerDamage(player, enemy) {
+    if (this.gameOver || this.transitioning) return;
+    
+    this.gameOver = true;
+    this.physics.pause();
+    this.hudStatus.setText('HALTING STATE INITIATED: SYSTEM MEMORY CORRUPTED.');
+    
+    this.add.text(480, 240, 'CRITICAL SYSTEM FAILURE', { fontFamily: 'monospace', fontSize: '32px', color: '#ff3366' }).setOrigin(0.5);
+    
+    const reloadBtn = this.add.dom(480, 310, 'button', {
+      width: '160px', height: '36px', background: '#ff3366', color: '#fff', border: 'none', cursor: 'pointer', fontFamily: 'monospace'
+    }, 'REBOOT SYSTEM');
+    
+    reloadBtn.addListener('click');
+    reloadBtn.on('click', () => {
+      this.gameOver = false;
+      this.currentStage = 'training';
+      this.scene.restart();
+    });
+  }
+
+  triggerUniversalVictory() {
+    this.gameOver = true;
+    this.physics.pause();
+    this.bombeMachine.destroy();
     this.enemies.clear(true, true);
-  }
-
-  submitAnswer() {
-    const stageData = this.levels[this.currentLevelIndex][this.currentStage];
-    const answer = this.puzzleInput.value.trim().toLowerCase();
-    const validAnswers = stageData.answer.map((a) => a.toLowerCase().trim());
-    if (validAnswers.includes(answer)) {
-      this.closePuzzle(true);
-    } else {
-      this.guideText.setText('Not quite. Think about how programming works and try again.');
-      this.puzzleInput.value = '';
-    }
+    if(this.phaseAlert) this.phaseAlert.setVisible(false);
+    this.hudStatus.setText('SOLSTICE PROTOCOL OPERATIONAL. SYSTEM FULLY ENCRYPTED.');
+    
+    this.add.rectangle(480, 270, 960, 540, 0x070b19, 0.9);
+    this.add.text(480, 200, 'COMPUTATION PASS COMPLETE', { fontFamily: 'monospace', fontSize: '38px', color: '#00ffcc' }).setOrigin(0.5);
+    this.add.text(480, 260, 'Happy Birthday Alan Turing! The Turing Machine has safely halted.', { fontFamily: 'monospace', fontSize: '16px', color: '#8fa0cd' }).setOrigin(0.5);
   }
 
   update() {
-    if (this.gameOver) return;
+    if (this.gameOver || this.showingPuzzle || this.transitioning) {
+      this.player.setVelocityX(0);
+      return;
+    }
 
-    if (this.cursors.left.isDown) {
-      this.player.setVelocityX(-220);
-      this.facing = 'left';
-    } else if (this.cursors.right.isDown) {
-      this.player.setVelocityX(220);
-      this.facing = 'right';
+    if (this.keys.left.isDown) {
+      this.player.setVelocityX(-240);
+      this.player.flipX = true;
+    } else if (this.keys.right.isDown) {
+      this.player.setVelocityX(240);
+      this.player.flipX = false;
     } else {
       this.player.setVelocityX(0);
     }
 
-    if ((this.cursors.up.isDown || this.cursors.up2.isDown) && this.player.body.blocked.down) {
-      this.player.setVelocityY(-430);
+    if (this.keys.up.isDown && this.player.body.touching.down) {
+      this.player.setVelocityY(-520);
     }
 
-    if (this.currentStage === 'mission') {
-      this.enemies.children.entries.forEach((enemy) => {
-        if (enemy.active && enemy.x < -50) {
-          enemy.destroy();
-          this.guideText.setText('An enemy slipped past! Focus on the puzzle and eliminate them faster.');
-        }
-      });
+    this.bullets.children.entries.forEach(b => {
+      if(b && (b.x < 0 || b.x > 960)) b.destroy();
+    });
 
-      if (this.bomb.enemyCount > 0) {
-        this.enemyCountText.setText(`Enemies: ${this.bomb.enemiesDefeated}/${this.bomb.enemyCount}`);
-      }
-    }
+    this.nearTerminal = Phaser.Math.Distance.Between(this.player.x, this.player.y, this.bombeMachine.x, this.bombeMachine.y) < 85;
 
-    if (this.readyForNextLevel) {
-      const distanceToPortal = Phaser.Math.Distance.Between(this.player.x, this.player.y, this.nextLevelPortal.x, this.nextLevelPortal.y);
-      if (distanceToPortal < 80 && Phaser.Input.Keyboard.JustDown(this.cursors.inspect)) {
-        this.advanceToNextLevel();
+    if (this.nearTerminal && !this.showingPuzzle) {
+      if (!this.actionTip) {
+        this.actionTip = this.add.text(480, 160, '[ PRESS E TO CONNECT TERMINAL LINK ]', {
+          fontFamily: 'monospace', fontSize: '14px', color: '#00ffcc', backgroundColor: '#070b19'
+        }).setOrigin(0.5).setDepth(20);
       }
-    }
-
-    this.nearBomb = false;
-    if (this.currentStage !== 'complete') {
-      this.nearBomb = Phaser.Math.Distance.Between(this.player.x, this.player.y, this.bomb.x, this.bomb.y) < 80;
-    }
-
-    if (this.nearBomb && !this.showingPuzzle) {
-      if (!this.hintText) {
-        this.hintText = this.add.text(420, 110, 'Press E to inspect the bomb', {
-          fontFamily: 'monospace',
-          fontSize: '18px',
-          color: '#ffffff',
-        }).setDepth(10);
-      }
-      if (this.hintText) {
-        this.hintText.setVisible(true);
-      }
-    } else if (this.hintText) {
-      this.hintText.setVisible(false);
+      this.actionTip.setVisible(true);
+    } else if (this.actionTip) {
+      this.actionTip.setVisible(false);
     }
   }
 }
@@ -532,5 +625,11 @@ export default function PhaserGame() {
     };
   }, []);
 
-  return <div className="phaser-container" ref={containerRef} />;
+  return (
+    <div 
+      className="phaser-game-window" 
+      ref={containerRef} 
+      style={{ width: '960px', height: '540px', position: 'relative', margin: '0 auto', border: '4px solid #1a2647', borderRadius: '8px', overflow: 'hidden' }} 
+    />
+  );
 }

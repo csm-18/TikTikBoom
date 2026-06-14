@@ -73,6 +73,7 @@ class GameScene extends Phaser.Scene {
     this.nearBomb = false;
     this.showingPuzzle = false;
     this.currentStage = 'training';
+    this.facing = 'right';
   }
 
   create() {
@@ -123,16 +124,33 @@ class GameScene extends Phaser.Scene {
     ];
 
     this.add.rectangle(480, 270, 960, 540, 0x08142f);
-    this.add.tileSprite(480, 529, 960, 22, 'ground').setScale(2).setOrigin(0, 1);
+    this.add.tileSprite(0, 529, 960, 22, 'ground').setScale(2).setOrigin(0, 1);
     this.guideSprite = this.add.image(120, 100, 'guide').setScale(3);
 
-    this.player = this.physics.add.sprite(120, 380, 'player');
+    this.nextLevelPortal = this.add.rectangle(900, 420, 40, 90, 0x4b6ef2, 0.8).setOrigin(0.5).setVisible(false);
+    this.nextLevelLabel = this.add.text(900, 320, 'NEXT', {
+      fontFamily: 'monospace',
+      fontSize: '18px',
+      color: '#ffffff',
+    }).setOrigin(0.5).setVisible(false);
+
+    this.player = this.physics.add.sprite(120, 360, 'player');
     this.player.setDisplaySize(32, 48).setBounce(0.1).setCollideWorldBounds(true);
 
+    this.bullets = this.physics.add.group();
+    this.enemies = this.physics.add.group();
+
     const platforms = this.physics.add.staticGroup();
-    platforms.create(480, 530, 'ground').setScale(7, 1).refreshBody();
+    platforms.create(480, 530, 'ground').setScale(12, 1).refreshBody();
+    platforms.create(260, 430, 'ground').setScale(4, 0.5).refreshBody();
+    platforms.create(700, 330, 'ground').setScale(4, 0.5).refreshBody();
+    platforms.create(440, 240, 'ground').setScale(3, 0.5).refreshBody();
 
     this.physics.add.collider(this.player, platforms);
+    this.physics.add.collider(this.enemies, platforms);
+    this.physics.add.collider(this.bullets, platforms, (bullet) => bullet.destroy());
+    this.physics.add.overlap(this.bullets, this.enemies, this.handleBulletEnemyCollision, null, this);
+    this.physics.add.overlap(this.player, this.enemies, this.handlePlayerEnemyCollision, null, this);
 
     this.cursors = this.input.keyboard.addKeys({
       left: Phaser.Input.Keyboard.KeyCodes.A,
@@ -145,16 +163,19 @@ class GameScene extends Phaser.Scene {
       enter: Phaser.Input.Keyboard.KeyCodes.ENTER,
     });
 
-    this.bullets = this.physics.add.group();
-    this.enemies = this.physics.add.group();
-
-    this.bomb = this.physics.add.staticSprite(520, 460, 'bomb');
+    this.bomb = this.physics.add.staticSprite(820, 420, 'bomb');
     this.bomb.setDisplaySize(48, 48);
     this.bomb.enemyCount = 0;
     this.bomb.enemiesDefeated = 0;
 
     this.currentLevelIndex = 0;
-    this.levelText = this.add.text(20, 20, `Level 1 • ${this.levels[0].name}`, {
+    this.score = 0;
+    this.gameOver = false;
+    this.readyForNextLevel = false;
+    this.facing = 'right';
+    this.bulletType = '0';
+
+    this.levelText = this.add.text(20, 20, `Level 1 • ${this.levels[0].name} (Training)`, {
       fontFamily: 'monospace',
       fontSize: '20px',
       color: '#f7f7ff',
@@ -179,27 +200,42 @@ class GameScene extends Phaser.Scene {
       color: '#ff9999',
     });
 
+    this.scoreText = this.add.text(740, 60, 'Score: 0', {
+      fontFamily: 'monospace',
+      fontSize: '14px',
+      color: '#99ff99',
+    });
+
     this.input.keyboard.on('keydown-Z', () => {
       this.bulletType = this.bulletType === '0' ? '1' : '0';
       this.bulletText.setText(`Bullet: ${this.bulletType}`);
     });
 
+    if (!this.textures.exists('bullet')) {
+      const bulletGraphics = this.add.graphics().fillStyle(0xffffff, 1).fillRect(0, 0, 10, 10);
+      bulletGraphics.generateTexture('bullet', 10, 10);
+      bulletGraphics.destroy();
+    }
+
     this.input.keyboard.on('keydown-SPACE', () => {
-      if (this.showingPuzzle) return;
-      const bullet = this.bullets.create(this.player.x + 22, this.player.y + 8, null).setSize(12, 12);
+      if (this.showingPuzzle || this.gameOver) return;
+      const direction = this.facing === 'left' ? -1 : 1;
+      const bullet = this.bullets.create(this.player.x + (direction * 22), this.player.y + 8, 'bullet').setDisplaySize(10, 10);
       bullet.body.allowGravity = false;
-      bullet.setVelocityX(420);
+      bullet.setVelocityX(420 * direction);
       bullet.setTint(this.bulletType === '0' ? 0x69d3ff : 0xffd56f);
       bullet.type = this.bulletType;
+      bullet.setFlipX(direction === -1);
+      bullet.setCollideWorldBounds(false);
       bullet.update = function () {
-        if (this.x > 980) {
+        if (this.x < -20 || this.x > 980) {
           this.destroy();
         }
       };
     });
 
     this.input.keyboard.on('keydown-E', () => {
-      if (!this.nearBomb || this.showingPuzzle) return;
+      if (!this.nearBomb || this.showingPuzzle || this.gameOver) return;
       this.openPuzzle();
     });
 
@@ -273,12 +309,19 @@ class GameScene extends Phaser.Scene {
         this.submitAnswer();
       }
     });
-
-    this.physics.add.collider(this.bullets, platforms, (bullet) => bullet.destroy());
-    // Levels already defined at start of create()
   }
 
   openPuzzle() {
+    if (this.currentStage === 'complete') {
+      this.guideText.setText('Level complete! Move to the portal and press E to continue.');
+      return;
+    }
+
+    if (this.currentStage === 'mission' && this.bomb.enemiesDefeated < this.bomb.enemyCount) {
+      this.guideText.setText('Clear all enemies first, then inspect the mission bomb.');
+      return;
+    }
+
     this.showingPuzzle = true;
     this.puzzleInput.value = '';
     const stageData = this.levels[this.currentLevelIndex][this.currentStage];
@@ -292,13 +335,62 @@ class GameScene extends Phaser.Scene {
     this.bomb.enemyCount = this.levels[this.currentLevelIndex].enemies;
     this.bomb.enemiesDefeated = 0;
     for (let i = 0; i < this.bomb.enemyCount; i++) {
-      const enemy = this.enemies.create(700 - i * 80, 400 + Math.random() * 60, null);
-      enemy.setFillStyle(0xd95454);
-      enemy.setSize(34, 46);
+      const enemy = this.enemies.create(760 - i * 80, 380, 'player');
+      enemy.setTint(0xd95454);
+      enemy.setDisplaySize(32, 44);
       enemy.setBounce(0.2);
-      enemy.setVelocityX(Phaser.Math.Between(-100, -50));
+      enemy.setCollideWorldBounds(true);
+      enemy.setVelocityX(Phaser.Math.Between(-120, -80));
       enemy.health = 1;
     }
+  }
+
+  handleBulletEnemyCollision(bullet, enemy) {
+    if (this.gameOver) return;
+    enemy.destroy();
+    bullet.destroy();
+    this.score += 1;
+    this.scoreText.setText(`Score: ${this.score}`);
+    this.bomb.enemiesDefeated += 1;
+    if (this.bomb.enemiesDefeated >= this.bomb.enemyCount) {
+      this.guideText.setText('All enemies defeated! Now inspect the bomb to defuse it.');
+      this.enemyCountText.setText('Enemies: 0');
+    } else {
+      this.guideText.setText(`Enemies down: ${this.bomb.enemiesDefeated}/${this.bomb.enemyCount}`);
+      this.enemyCountText.setText(`Enemies: ${this.bomb.enemiesDefeated}/${this.bomb.enemyCount}`);
+    }
+  }
+
+  handlePlayerEnemyCollision(player, enemy) {
+    if (this.gameOver) return;
+    this.gameOver = true;
+    enemy.destroy();
+    this.physics.pause();
+    player.setTint(0xff0000);
+    this.guideText.setText('Game Over! An enemy touched you. Press ENTER or click RESTART.');
+    const gameOverText = this.add.text(480, 270, 'GAME OVER', {
+      fontFamily: 'monospace',
+      fontSize: '36px',
+      color: '#ff6666',
+    }).setOrigin(0.5);
+    this.restartButton = this.add.dom(480, 330, 'button', {
+      width: '180px',
+      height: '36px',
+      background: '#ff5c5c',
+      color: '#ffffff',
+      border: 'none',
+      borderRadius: '8px',
+      fontFamily: 'monospace',
+      fontSize: '16px',
+      cursor: 'pointer',
+    }, 'RESTART');
+    this.restartButton.addListener('click');
+    this.restartButton.on('click', () => {
+      this.scene.restart();
+    });
+    this.input.keyboard.once('keydown-ENTER', () => {
+      this.scene.restart();
+    });
   }
 
   closePuzzle(success = false) {
@@ -308,28 +400,50 @@ class GameScene extends Phaser.Scene {
       if (this.currentStage === 'training') {
         this.currentStage = 'mission';
         const levelNumber = this.currentLevelIndex + 1;
-        this.levelText.setText(`Level ${levelNumber} • ${this.levels[this.currentLevelIndex].name}`);
+        this.levelText.setText(`Level ${levelNumber} • ${this.levels[this.currentLevelIndex].name} (Mission)`);
         this.guideText.setText('Training complete! Enemies incoming. Defuse the mission bomb!');
         this.spawnEnemies();
       } else {
-        this.currentLevelIndex += 1;
-        if (this.currentLevelIndex >= this.levels.length) {
+        if (this.currentLevelIndex >= this.levels.length - 1) {
           this.guideText.setText('You finished all missions. You are ready to code in the field!');
           this.levelText.setText('All Levels Complete');
           this.currentStage = 'complete';
           this.bomb.destroy();
           this.enemies.clear(true, true);
+          this.nextLevelPortal.setVisible(false);
+          this.nextLevelLabel.setVisible(false);
         } else {
           const levelNumber = this.currentLevelIndex + 1;
-          this.currentStage = 'training';
-          this.levelText.setText(`Level ${levelNumber} • ${this.levels[this.currentLevelIndex].name}`);
-          this.guideText.setText('New level unlocked. Inspect the training bomb to continue.');
+          this.currentStage = 'complete';
+          this.levelText.setText(`Level ${levelNumber} • ${this.levels[this.currentLevelIndex].name} Complete`);
+          this.guideText.setText('Level complete! Move to the portal and press E to continue.');
+          this.readyForNextLevel = true;
+          this.nextLevelPortal.setVisible(true);
+          this.nextLevelLabel.setVisible(true);
+          this.bomb.setVisible(false);
+          this.bomb.setActive(false);
           this.enemies.clear(true, true);
         }
       }
     } else {
       this.guideText.setText('Incorrect answer. Study the hint and try again!');
     }
+  }
+
+  advanceToNextLevel() {
+    this.readyForNextLevel = false;
+    const levelNumber = this.currentLevelIndex + 2;
+    this.currentLevelIndex += 1;
+    this.currentStage = 'training';
+    this.levelText.setText(`Level ${levelNumber} • ${this.levels[this.currentLevelIndex].name} (Training)`);
+    this.guideText.setText('New level unlocked. Inspect the training bomb to continue.');
+    this.nextLevelPortal.setVisible(false);
+    this.nextLevelLabel.setVisible(false);
+    this.bomb.setPosition(820, 420);
+    this.bomb.setActive(true).setVisible(true);
+    this.bomb.enemyCount = 0;
+    this.bomb.enemiesDefeated = 0;
+    this.enemies.clear(true, true);
   }
 
   submitAnswer() {
@@ -345,10 +459,14 @@ class GameScene extends Phaser.Scene {
   }
 
   update() {
+    if (this.gameOver) return;
+
     if (this.cursors.left.isDown) {
       this.player.setVelocityX(-220);
+      this.facing = 'left';
     } else if (this.cursors.right.isDown) {
       this.player.setVelocityX(220);
+      this.facing = 'right';
     } else {
       this.player.setVelocityX(0);
     }
@@ -359,29 +477,29 @@ class GameScene extends Phaser.Scene {
 
     if (this.currentStage === 'mission') {
       this.enemies.children.entries.forEach((enemy) => {
-        if (enemy.active && enemy.x < 100) {
+        if (enemy.active && enemy.x < -50) {
           enemy.destroy();
           this.guideText.setText('An enemy slipped past! Focus on the puzzle and eliminate them faster.');
         }
       });
 
-      this.physics.overlap(this.bullets, this.enemies, (bullet, enemy) => {
-        enemy.destroy();
-        bullet.destroy();
-        this.bomb.enemiesDefeated += 1;
-        if (this.bomb.enemiesDefeated === this.bomb.enemyCount) {
-          this.guideText.setText('All enemies down! Now inspect the bomb to defuse it.');
-        } else {
-          this.guideText.setText(`Enemies down: ${this.bomb.enemiesDefeated}/${this.bomb.enemyCount}`);
-        }
-      });
+      if (this.bomb.enemyCount > 0) {
+        this.enemyCountText.setText(`Enemies: ${this.bomb.enemiesDefeated}/${this.bomb.enemyCount}`);
+      }
     }
 
-    if (this.currentStage === 'mission' && this.bomb.enemyCount > 0) {
-      this.enemyCountText.setText(`Enemies: ${this.bomb.enemiesDefeated}/${this.bomb.enemyCount}`);
+    if (this.readyForNextLevel) {
+      const distanceToPortal = Phaser.Math.Distance.Between(this.player.x, this.player.y, this.nextLevelPortal.x, this.nextLevelPortal.y);
+      if (distanceToPortal < 80 && Phaser.Input.Keyboard.JustDown(this.cursors.inspect)) {
+        this.advanceToNextLevel();
+      }
     }
 
-    this.nearBomb = Phaser.Math.Distance.Between(this.player.x, this.player.y, this.bomb.x, this.bomb.y) < 80;
+    this.nearBomb = false;
+    if (this.currentStage !== 'complete') {
+      this.nearBomb = Phaser.Math.Distance.Between(this.player.x, this.player.y, this.bomb.x, this.bomb.y) < 80;
+    }
+
     if (this.nearBomb && !this.showingPuzzle) {
       if (!this.hintText) {
         this.hintText = this.add.text(420, 110, 'Press E to inspect the bomb', {
@@ -390,7 +508,9 @@ class GameScene extends Phaser.Scene {
           color: '#ffffff',
         }).setDepth(10);
       }
-      this.hintText.setVisible(true);
+      if (this.hintText) {
+        this.hintText.setVisible(true);
+      }
     } else if (this.hintText) {
       this.hintText.setVisible(false);
     }

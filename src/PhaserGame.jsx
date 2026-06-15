@@ -252,12 +252,12 @@ class GameScene extends Phaser.Scene {
         ],
         bombePos: { x: 200, y: 260 },
         training: {
-          clue: 'Queues maintain transactional stream order. What acronym defines\nthe First-In, First-Out structural standard?',
+          clue: 'Queues maintain transactional stream order. What acronym defines\the First-In, First-Out structural standard?',
           hint: 'Four letters starting with F.',
           answer: ['fifo']
         },
         mission: {
-          clue: 'What is the formal structural term for inserting an item into\nthe back tail of a valid runtime Queue?',
+          clue: 'What is the formal structural term for inserting an item into\the back tail of a valid runtime Queue?',
           hint: 'The opposite of removing items via "dequeue".',
           answer: ['enqueue']
         }
@@ -338,6 +338,7 @@ class GameScene extends Phaser.Scene {
     });
 
     this.input.keyboard.on('keydown-Z', () => {
+      if (this.showingPuzzle) return; // Prevent tape alteration during input entry
       this.tapeState = this.tapeState === '0' ? '1' : '0';
       this.hudTape.setText(`TAPE BUFFER STATE: [ ${this.tapeState} ]`);
       this.hudTape.setTint(this.tapeState === '0' ? 0x00d2ff : 0xffa500);
@@ -382,7 +383,6 @@ class GameScene extends Phaser.Scene {
     this.hudTape = this.add.text(560, 24, 'TAPE BUFFER STATE: [ 0 ]', { fontFamily: 'monospace', fontSize: '14px', color: '#00d2ff' });
     this.hudStatus = this.add.text(560, 50, 'STATUS: APPROACH THE BOMBE INTERFACE [E]', { fontFamily: 'monospace', fontSize: '13px', color: '#00ffcc' });
     
-    // NEW HUD COMPONENT: Large warning alert for clear stage objective feedback
     this.phaseAlert = this.add.text(480, 105, '', { 
       fontFamily: 'monospace', 
       fontSize: '15px', 
@@ -422,7 +422,9 @@ class GameScene extends Phaser.Scene {
     this.domBtn.addListener('click');
     this.domBtn.on('click', () => this.evaluateDecryptionAttempt());
 
+    // Fix: Stop layout key propagation into Phaser when user is typing inside HTML input
     this.domInput.node.addEventListener('keydown', (e) => {
+      e.stopPropagation();
       if (e.key === 'Enter') {
         e.preventDefault();
         this.evaluateDecryptionAttempt();
@@ -440,6 +442,7 @@ class GameScene extends Phaser.Scene {
     }
 
     this.showingPuzzle = true;
+    this.player.setVelocityX(0); // Immediately freeze physical velocity on access
     this.domInput.node.value = '';
     const levelData = this.levels[this.currentLevelIndex][this.currentStage];
     
@@ -462,6 +465,7 @@ class GameScene extends Phaser.Scene {
       this.hudStatus.setText('DECRYPTION FAILURE: PARITY CHECK ERROR. RETRY.');
       this.hudStatus.setTint(0xff3366);
       this.domInput.node.value = '';
+      this.domInput.node.focus();
     }
   }
 
@@ -476,11 +480,9 @@ class GameScene extends Phaser.Scene {
       this.updateHUDSectors();
       this.triggerGlitchInvasion();
 
-      // UX FIX: Fire pulsing instructions alert to clear out transition ambiguity loop
       this.phaseAlert.setText('⚠️ TRAINING DATA CRACKED! ELIMINATE ENEMIES & RETURN TO THE BOMBE MACHINE TERMINAL!');
       this.phaseAlert.setVisible(true);
       
-      // Auto fade alert safely after 4 seconds run time
       if (this.alertFadeTimer) this.alertFadeTimer.remove();
       this.alertFadeTimer = this.time.delayedCall(4000, () => {
         this.phaseAlert.setVisible(false);
@@ -530,8 +532,6 @@ class GameScene extends Phaser.Scene {
     this.score += 25;
     if (this.enemies.countActive() === 0) {
       this.hudStatus.setText('THREATS PURGED. LOG BACK INTO TERMINAL FOR PROTOCOL ADVANCEMENT.');
-      
-      // Dynamic notification updates when battle loops switch objectives
       this.phaseAlert.setText('⚡ SECTOR CLEAR: APPROACH TERMINAL NODE AND PRESS [E] TO OVERRIDE LEVEL!');
       this.phaseAlert.setVisible(true);
     }
@@ -572,6 +572,7 @@ class GameScene extends Phaser.Scene {
   }
 
   update() {
+    // Strict Guard: block structural logic execution loops if state locks are active
     if (this.gameOver || this.showingPuzzle || this.transitioning) {
       this.player.setVelocityX(0);
       return;

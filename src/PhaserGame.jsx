@@ -139,12 +139,12 @@ class GameScene extends Phaser.Scene {
         bombePos: { x: 480, y: 250 },
         training: {
           clue: 'Given Data Array: [12, 24, 48, 96, 192]\nWhat value is stored at index 3?',
-          hint: 'Arrays use 0-based indexing. Index 0 holds 12, Index 1 holds 24...',
+          hint: 'Arrays use 0-based indexing. Enter the raw numeric value.',
           answer: ['96']
         },
         mission: {
           clue: 'If an array allocation spans indices 0 through 7,\nwhat is the total Length capacity of this array?',
-          hint: 'Count total slots from zero inclusive up to seven.',
+          hint: 'Count total slots from zero inclusive up to seven. Enter the raw number.',
           answer: ['8']
         }
       },
@@ -162,12 +162,12 @@ class GameScene extends Phaser.Scene {
         bombePos: { x: 180, y: 250 },
         training: {
           clue: 'Searching linearly through a scrambled list of 100 items,\nwhat is the worst-case number of comparison operations?',
-          hint: 'In worst-case scenario, the item is at the final position or missing.',
+          hint: 'In worst-case scenario, the item is at the final position. Enter the raw number.',
           answer: ['100']
         },
         mission: {
           clue: 'In a completely sorted array of 31 items, what is the maximum\nchecks required using Binary Search?',
-          hint: 'Binary search cuts work in half each time: log2(32) yields...',
+          hint: 'Binary search cuts work in half each time: log2(32) yields... Enter the raw number.',
           answer: ['5']
         }
       },
@@ -185,12 +185,12 @@ class GameScene extends Phaser.Scene {
         bombePos: { x: 300, y: 180 },
         training: {
           clue: 'Which sorting algorithm has a guaranteed performance profile of\nO(n log n) even in its absolute worst-case scenario?',
-          hint: 'Choose between: bubblesort, quicksort, mergesort.',
+          hint: 'Choose between: bubblesort, quicksort, mergesort. Type the single word.',
           answer: ['mergesort', 'merge sort']
         },
         mission: {
           clue: 'What is the structural average-case time complexity\nof standard Bubble Sort loops?',
-          hint: 'Nested loops traversing inputs quadratically result in O(...) notation.',
+          hint: 'Use lowercase caret syntax without spaces or "O" notation, e.g., n^2',
           answer: ['o(n^2)', 'on^2', 'n^2']
         }
       },
@@ -208,12 +208,12 @@ class GameScene extends Phaser.Scene {
         bombePos: { x: 480, y: 160 },
         training: {
           clue: 'Unlike array structures, elements in a single Linked List do not require\ncontiguous blocks of memory. What connects one node to the next?',
-          hint: 'A reference variable holding a memory location addresses.',
+          hint: 'A reference variable holding a memory location addresses. Enter a single word.',
           answer: ['pointer', 'pointers', 'reference', 'link']
         },
         mission: {
           clue: 'What is the time complexity to insert a new head node item\nat the absolute front of a Singly Linked List?',
-          hint: 'Changing head references takes a constant fraction of work.',
+          hint: 'Constant fraction of work. Type just the raw mathematical value, e.g., 1',
           answer: ['o(1)', 'o1', '1']
         }
       },
@@ -231,12 +231,12 @@ class GameScene extends Phaser.Scene {
         bombePos: { x: 810, y: 340 },
         training: {
           clue: 'Stack buffers use a strict architectural tracking methodology.\nWhat is the short technical acronym used for Last-In, First-Out?',
-          hint: 'Four letters starting with L.',
+          hint: 'Four-letter acronym. Type the short abbreviation.',
           answer: ['lifo']
         },
         mission: {
           clue: 'What is the name of the operations execution function used to\nremove and return the top element from a processing Stack?',
-          hint: 'Commonly paired with its opposite partner function "push".',
+          hint: 'Commonly paired with "push". Enter the 3-letter keyword function name.',
           answer: ['pop']
         }
       },
@@ -252,13 +252,13 @@ class GameScene extends Phaser.Scene {
         ],
         bombePos: { x: 200, y: 260 },
         training: {
-          clue: 'Queues maintain transactional stream order. What acronym defines\the First-In, First-Out structural standard?',
-          hint: 'Four letters starting with F.',
+          clue: 'Queues maintain transactional stream order. What acronym defines\nthe First-In, First-Out structural standard?',
+          hint: 'Four-letter acronym. Type the short abbreviation.',
           answer: ['fifo']
         },
         mission: {
           clue: 'What is the formal structural term for inserting an item into\the back tail of a valid runtime Queue?',
-          hint: 'The opposite of removing items via "dequeue".',
+          hint: 'The opposite of removing items via "dequeue". Enter the specific word.',
           answer: ['enqueue']
         }
       },
@@ -276,12 +276,12 @@ class GameScene extends Phaser.Scene {
         bombePos: { x: 480, y: 260 },
         training: {
           clue: 'What is the name given to the single top-most apex node origin point\nof a valid hierarchical Binary Tree structure?',
-          hint: 'Think of the bottom of a plant, inverted in computer science representations.',
+          hint: 'Inverted plant representation in computer science. Enter the 4-letter word.',
           answer: ['root']
         },
         mission: {
           clue: 'If a balanced Binary Search Tree contains 3 operational levels,\nwhat is the maximum total count of leaf nodes on its bottom layer?',
-          hint: 'Each node splits exactly into 2 tracks. Level 0=1, Level 1=2, Level 2=...',
+          hint: 'Each node splits into 2. Level 0=1, Level 1=2. Enter the raw numeric calculation.',
           answer: ['4']
         }
       },
@@ -298,12 +298,12 @@ class GameScene extends Phaser.Scene {
         bombePos: { x: 480, y: 240 },
         training: {
           clue: 'Alan Turing proved that no universal algorithm can perfectly predict if a given program\nwill finish running or run forever. What is this famous problem called?',
-          hint: 'Named after the action of stopping execution completely.',
+          hint: 'Named after the action of stopping execution completely. Type the standard term.',
           answer: ['halting problem', 'the halting problem', 'halting']
         },
         mission: {
           clue: 'Excellent! To execute final decryption override, type the status term\nof the test used to see if a machine displays human-intelligent behavior.',
-          hint: 'Named directly after the birthday hero himself.',
+          hint: 'Named directly after Alan. Enter the name of the test.',
           answer: ['turing test', 'the turing test']
         }
       }
@@ -338,7 +338,7 @@ class GameScene extends Phaser.Scene {
     });
 
     this.input.keyboard.on('keydown-Z', () => {
-      if (this.showingPuzzle) return; // Prevent tape alteration during input entry
+      if (this.showingPuzzle) return; 
       this.tapeState = this.tapeState === '0' ? '1' : '0';
       this.hudTape.setText(`TAPE BUFFER STATE: [ ${this.tapeState} ]`);
       this.hudTape.setTint(this.tapeState === '0' ? 0x00d2ff : 0xffa500);
@@ -422,9 +422,8 @@ class GameScene extends Phaser.Scene {
     this.domBtn.addListener('click');
     this.domBtn.on('click', () => this.evaluateDecryptionAttempt());
 
-    // Fix: Stop layout key propagation into Phaser when user is typing inside HTML input
     this.domInput.node.addEventListener('keydown', (e) => {
-      e.stopPropagation();
+      e.stopPropagation(); // Block global Phaser layouts from reading keystrokes while focused
       if (e.key === 'Enter') {
         e.preventDefault();
         this.evaluateDecryptionAttempt();
@@ -442,7 +441,7 @@ class GameScene extends Phaser.Scene {
     }
 
     this.showingPuzzle = true;
-    this.player.setVelocityX(0); // Immediately freeze physical velocity on access
+    this.player.setVelocityX(0); 
     this.domInput.node.value = '';
     const levelData = this.levels[this.currentLevelIndex][this.currentStage];
     
@@ -572,7 +571,6 @@ class GameScene extends Phaser.Scene {
   }
 
   update() {
-    // Strict Guard: block structural logic execution loops if state locks are active
     if (this.gameOver || this.showingPuzzle || this.transitioning) {
       this.player.setVelocityX(0);
       return;
